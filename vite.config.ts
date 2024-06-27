@@ -9,18 +9,32 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: false,
-
+      injectRegister: "script",
+      includeAssets: ["artifacts.png", "claude-artifacts-wide.png", "claude-artifacts-narrow.png"],
       pwaAssets: {
         disabled: false,
         config: true,
       },
 
       manifest: {
-        name: "claude-apps",
-        short_name: "claude-apps",
-        description: "Apps made with Claude",
+        name: "Claude Artifacts",
+        short_name: "Claude Artifacts",
+        description: "Claude Artifacts",
         theme_color: "#ffffff",
+        screenshots: [
+          {
+            src: "claude-artifacts-wide.png",
+            sizes: "1837x970",
+            type: "image/png",
+            form_factor: "wide"
+          },
+          {
+            src: "claude-artifacts-narrow.png",
+            sizes: "404x877",
+            type: "image/png",
+            form_factor: "narrow"
+          }
+        ],
       },
 
       workbox: {
@@ -30,7 +44,7 @@ export default defineConfig({
       },
 
       devOptions: {
-        enabled: false,
+        enabled: true,
         navigateFallback: "index.html",
         suppressWarnings: true,
         type: "module",
