@@ -25,6 +25,5 @@
     }
   },
   "include": ["src"],
-  "exclude": ["src/artifacts/"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

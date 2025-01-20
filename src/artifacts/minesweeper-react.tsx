@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -6,7 +6,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const BOARD_SIZE = 10;
 const NUM_MINES = 10;
 
-const Cell = ({ value, revealed, flagged, onClick, onContextMenu, isWin }) => (
+interface CellProps {
+  value: number | 'X';
+  revealed: boolean;
+  flagged: boolean;
+  onClick: () => void;
+  onContextMenu: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  isWin: boolean;
+}
+
+const Cell: React.FC<CellProps> = ({ value, revealed, flagged, onClick, onContextMenu, isWin }) => (
   <Button
     variant="outline"
     className={`w-8 h-8 p-0 m-0 ${
@@ -23,18 +32,20 @@ const Cell = ({ value, revealed, flagged, onClick, onContextMenu, isWin }) => (
   </Button>
 );
 
-const Minesweeper = () => {
-  const [board, setBoard] = useState([]);
-  const [gameOver, setGameOver] = useState(false);
-  const [win, setWin] = useState(false);
+interface CellData {
+  value: number | 'X';
+  revealed: boolean;
+  flagged: boolean;
+}
 
-  useEffect(() => {
-    initializeBoard();
-  }, []);
+const Minesweeper: React.FC = () => {
+  const [board, setBoard] = useState<CellData[][]>([]);
+  const [gameOver, setGameOver] = useState<boolean>(false);
+  const [win, setWin] = useState<boolean>(false);
 
-  const initializeBoard = () => {
-    const newBoard = Array(BOARD_SIZE).fill().map(() => 
-      Array(BOARD_SIZE).fill().map(() => ({
+  const initializeBoard = useCallback((): void => {
+    const newBoard: CellData[][] = Array(BOARD_SIZE).fill(null).map(() => 
+      Array(BOARD_SIZE).fill(null).map(() => ({
         value: 0,
         revealed: false,
         flagged: false,
@@ -64,9 +75,13 @@ const Minesweeper = () => {
     setBoard(newBoard);
     setGameOver(false);
     setWin(false);
-  };
+  }, []); // Empty dependency array as it doesn't depend on any external variables
 
-  const countAdjacentMines = (board, row, col) => {
+  useEffect(() => {
+    initializeBoard();
+  }, [initializeBoard]);
+
+  const countAdjacentMines = (board: CellData[][], row: number, col: number): number => {
     let count = 0;
     for (let r = -1; r <= 1; r++) {
       for (let c = -1; c <= 1; c++) {
@@ -81,7 +96,7 @@ const Minesweeper = () => {
     return count;
   };
 
-  const revealCell = (row, col) => {
+  const revealCell = (row: number, col: number): void => {
     if (gameOver || win || board[row][col].flagged) return;
 
     const newBoard = [...board];
@@ -100,11 +115,11 @@ const Minesweeper = () => {
     checkWinCondition(newBoard);
   };
 
-  const chordAction = (board, row, col) => {
+  const chordAction = (board: CellData[][], row: number, col: number): void => {
     const cell = board[row][col];
     const adjacentFlags = countAdjacentFlags(board, row, col);
 
-    if (cell.value === adjacentFlags) {
+    if (typeof cell.value === 'number' && cell.value === adjacentFlags) {
       for (let r = -1; r <= 1; r++) {
         for (let c = -1; c <= 1; c++) {
           if (r === 0 && c === 0) continue;
@@ -125,7 +140,7 @@ const Minesweeper = () => {
     }
   };
 
-  const countAdjacentFlags = (board, row, col) => {
+  const countAdjacentFlags = (board: CellData[][], row: number, col: number): number => {
     let count = 0;
     for (let r = -1; r <= 1; r++) {
       for (let c = -1; c <= 1; c++) {
@@ -140,7 +155,7 @@ const Minesweeper = () => {
     return count;
   };
 
-  const floodFill = (board, row, col) => {
+  const floodFill = (board: CellData[][], row: number, col: number): void => {
     if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE || board[row][col].revealed || board[row][col].flagged) return;
 
     board[row][col].revealed = true;
@@ -154,7 +169,7 @@ const Minesweeper = () => {
     }
   };
 
-  const toggleFlag = (e, row, col) => {
+  const toggleFlag = (e: React.MouseEvent<HTMLButtonElement>, row: number, col: number): void => {
     e.preventDefault();
     if (gameOver || win || board[row][col].revealed) return;
 
@@ -163,7 +178,7 @@ const Minesweeper = () => {
     setBoard(newBoard);
   };
 
-  const revealAllMines = (board) => {
+  const revealAllMines = (board: CellData[][]): void => {
     board.forEach(row => {
       row.forEach(cell => {
         if (cell.value === 'X') {
@@ -173,7 +188,7 @@ const Minesweeper = () => {
     });
   };
 
-  const checkWinCondition = (board) => {
+  const checkWinCondition = (board: CellData[][]): void => {
     const win = board.every(row =>
       row.every(cell =>
         cell.value === 'X' ? !cell.revealed : cell.revealed

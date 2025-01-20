@@ -2,15 +2,23 @@ import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import mkcert from "vite-plugin-mkcert";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    tsconfigPaths(),
+    mkcert(),
     react(),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "script",
-      includeAssets: ["artifacts.png", "claude-artifacts-wide.png", "claude-artifacts-narrow.png"],
+      includeAssets: [
+        "artifacts.png",
+        "claude-artifacts-wide.png",
+        "claude-artifacts-narrow.png",
+      ],
       pwaAssets: {
         disabled: false,
         config: true,
@@ -26,14 +34,14 @@ export default defineConfig({
             src: "claude-artifacts-wide.png",
             sizes: "1837x970",
             type: "image/png",
-            form_factor: "wide"
+            form_factor: "wide",
           },
           {
             src: "claude-artifacts-narrow.png",
             sizes: "404x877",
             type: "image/png",
-            form_factor: "narrow"
-          }
+            form_factor: "narrow",
+          },
         ],
       },
 
@@ -53,7 +61,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: "/"
 });
