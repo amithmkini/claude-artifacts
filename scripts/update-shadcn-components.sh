@@ -21,28 +21,44 @@ if [ ! -d "$COMPONENTS_PATH/ui" ]; then
     exit 1
 fi
 
+# Choose package runner (npx, dlx, bunx) based on lockfile
+if [ -f "package-lock.json" ]; then
+    PACKAGE_RUNNER="npx"
+elif [ -f "pnpm-lock.yaml" ]; then
+    PACKAGE_RUNNER="pnpm dlx"
+elif [ -f "yarn.lock" ]; then
+    PACKAGE_RUNNER="yarn dlx"
+elif [ -f "bun.lockb" ]; then
+    PACKAGE_RUNNER="bunx"
+else
+    echo "Error: No package manager lockfile found"
+    echo "Please check your package manager"
+    exit 1
+fi
+
 # Log start of updates
 echo "Starting shadcn/ui components update..."
-echo "Checking components in src/components/ui/..."
+echo "Checking components in $COMPONENTS_PATH"
+echo "Using package runner: $PACKAGE_RUNNER"
 
 # Initialize counter
 updated=0
 failed=0
 
 # Update each component
-for file in src/components/ui/*.tsx; do
+for file in $COMPONENTS_PATH/ui/*.tsx; do
     # Extract component name
     component=$(basename "$file" .tsx)
     
     echo "Updating component: $component"
     
     # Try to update the component
-    if npx shadcn@latest add -y -o "$component"; then
+    if $PACKAGE_RUNNER shadcn@latest add -y -o "$component"; then
         updated=$((updated + 1))
-        echo "✓ Successfully updated $component"
+        echo -e "\033[32m✓\033[0m Successfully updated $component"
     else
         failed=$((failed + 1))
-        echo "✗ Failed to update $component"
+        echo -e "\033[31m✗\033[0m Failed to update $component"
     fi
 done
 
